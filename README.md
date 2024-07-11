@@ -6,7 +6,7 @@ It also serves for quick remotely restarting, stopping, and starting processes.
 Displays the status of PM2 processes every hour.
 
 **Bot written for a specific server**
-### Commands
+## Commands
 
 Start procces (must include relative path)\
 `#start {name}`
