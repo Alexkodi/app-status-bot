@@ -88,9 +88,9 @@ async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
         await ctx.send("""Command not found. 
                        Available commands are:
-                       # #start {name},
-                       # stop {name},
-                       # restart {name}""")
+                       #start {name},
+                       #stop {name},
+                       #restart {name}""")
     else:
         raise error
 
