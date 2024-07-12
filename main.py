@@ -83,25 +83,8 @@ async def send_pm2_status():
 
 # Polecenia
 @bot.command(name='status')
-async def send_pm2_status():
-    processes = await get_pm2_status()
-    if not processes:
-        return
-
-    status_message = "\n\n".join([
-        f"""__**{proc['name']}**__
-        **Uptime:** {format_uptime(proc['pm2_env']['pm_uptime'])}
-        **Status:** {proc['pm2_env']['status']}
-        **CPU:** {proc['monit']['cpu']}%
-        **Memory:** {(proc['monit']['memory'] / 1024 / 1024):.2f} MB"""
-        for proc in processes
-    ])
-
-    channel = bot.get_channel(CHANNEL_ID)
-    if channel:
-        await send_message(channel, status_message)
-    else:
-        print('Channel not found')
+async def pm2_status():
+    await send_pm2_status()
 
 @bot.command(name='start')
 async def pm2_start(ctx, name: str):
