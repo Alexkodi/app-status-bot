@@ -39,6 +39,20 @@ async def get_pm2_status():
         print(f"Error fetching PM2 status: {e}")
         return []
 
+# Globalna zmienna do przechowywania ID ostatniej wiadomości
+last_message_id = None
+
+async def send_message(channel, content):
+    global last_message_id
+    if last_message_id:
+        try:
+            previous_message = await channel.fetch_message(last_message_id)
+            await previous_message.delete()
+        except discord.NotFound:
+            pass
+    message = await channel.send(content)
+    last_message_id = message.id
+
 # Start
 @bot.event
 async def on_ready():
@@ -63,11 +77,32 @@ async def send_pm2_status():
 
     channel = bot.get_channel(CHANNEL_ID)
     if channel:
-        await channel.send(status_message)
+        await send_message(channel, status_message)
     else:
         print('Channel not found')
 
 # Polecenia
+@bot.command(name='status')
+async def send_pm2_status():
+    processes = await get_pm2_status()
+    if not processes:
+        return
+
+    status_message = "\n\n".join([
+        f"""__**{proc['name']}**__
+        **Uptime:** {format_uptime(proc['pm2_env']['pm_uptime'])}
+        **Status:** {proc['pm2_env']['status']}
+        **CPU:** {proc['monit']['cpu']}%
+        **Memory:** {(proc['monit']['memory'] / 1024 / 1024):.2f} MB"""
+        for proc in processes
+    ])
+
+    channel = bot.get_channel(CHANNEL_ID)
+    if channel:
+        await send_message(channel, status_message)
+    else:
+        print('Channel not found')
+
 @bot.command(name='start')
 async def pm2_start(ctx, name: str):
     result = run(['pm2', 'start', name], capture_output=True, text=True)
@@ -79,7 +114,7 @@ async def pm2_stop(ctx, name: str):
     await ctx.send(f"```{result.stdout}```")
 
 @bot.command(name='restart')
-async def pm2_stop(ctx, name: str):
+async def pm2_restart(ctx, name: str):
     result = run(['pm2', 'restart', name], capture_output=True, text=True)
     await ctx.send(f"```{result.stdout}```")
 
